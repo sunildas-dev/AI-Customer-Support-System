@@ -1,0 +1,20 @@
+# Node Modules
+node_modules/
+
+# Environment Variables
+.env
+backend/.env
+frontend/.env
+
+# Logs
+npm-debug.log*
+
+# Vite
+dist/
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
