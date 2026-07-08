@@ -55,3 +55,23 @@ export const getChatHistory = async (req, res) => {
     });
   }
 };
+export const getSidebarChats = async (req, res) => {
+  try {
+    const chats = await Chat.find({
+      user: req.user.id,
+    })
+      .sort({ createdAt: -1 })
+      .select("_id message")
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      chats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
