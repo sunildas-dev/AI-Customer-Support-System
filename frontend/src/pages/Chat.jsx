@@ -14,6 +14,8 @@ function Chat() {
     },
   ]);
 
+  const [isTyping, setIsTyping] = useState(false);
+
   const sendMessage = async (text) => {
     if (!text.trim()) return;
 
@@ -24,6 +26,8 @@ function Chat() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    setIsTyping(true);
 
     try {
       const token = localStorage.getItem("token");
@@ -38,6 +42,8 @@ function Chat() {
         }
       );
 
+      setIsTyping(false);
+
       const aiMessage = {
         id: Date.now() + 1,
         sender: "ai",
@@ -46,7 +52,9 @@ function Chat() {
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+
+      setIsTyping(false);
 
       setMessages((prev) => [
         ...prev,
@@ -66,7 +74,10 @@ function Chat() {
       <div className="flex-1 flex flex-col">
         <ChatHeader />
 
-        <ChatWindow messages={messages} />
+        <ChatWindow
+          messages={messages}
+          isTyping={isTyping}
+        />
 
         <ChatInput onSend={sendMessage} />
       </div>

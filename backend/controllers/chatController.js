@@ -30,3 +30,28 @@ export const sendMessage = async (req, res) => {
     });
   }
 };
+export const getChatHistory = async (req, res) => {
+  try {
+    console.log("===== HISTORY API =====");
+    console.log("User:", req.user);
+
+    const chats = await Chat.find({
+      user: req.user.id,
+    }).sort({ createdAt: 1 });
+
+    console.log("Chats Found:", chats.length);
+    console.log(chats);
+
+    res.status(200).json({
+      success: true,
+      chats,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
