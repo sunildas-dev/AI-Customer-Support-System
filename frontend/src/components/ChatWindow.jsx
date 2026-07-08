@@ -1,6 +1,15 @@
+import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 
 function ChatWindow({ messages, isTyping }) {
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, isTyping]);
+
   return (
     <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
       {messages.map((msg) => (
@@ -18,6 +27,8 @@ function ChatWindow({ messages, isTyping }) {
           </div>
         </div>
       )}
+
+      <div ref={bottomRef}></div>
     </div>
   );
 }
