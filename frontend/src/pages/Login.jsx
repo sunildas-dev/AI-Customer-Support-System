@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import API from "../services/api";
 
 function Login() {
@@ -10,49 +11,46 @@ function Login() {
     password: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  function handleChange(e) {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    console.log("Sending Data:", formData);
+    if (isLoading) return;
+
+    setIsLoading(true);
 
     try {
       const res = await API.post("/auth/login", formData);
 
-      console.log("Response:", res.data);
-
       localStorage.setItem("token", res.data.token);
 
-      alert("Login Successful ✅");
+      toast.success("Login successful 🎉");
 
       navigate("/chat");
     } catch (error) {
-      console.log("===== LOGIN ERROR =====");
-      console.log(error);
+      console.error("Login Error:", error);
 
-      if (error.response) {
-        console.log("Status:", error.response.status);
-        console.log("Data:", error.response.data);
-
-        alert(error.response.data.message);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
       } else {
-        console.log("Network Error:", error.message);
-
-        alert(error.message);
+        toast.error("Unable to login. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
-
         <h1 className="text-3xl font-bold text-center text-blue-600">
           AI Customer Support
         </h1>
@@ -62,7 +60,6 @@ function Login() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-
           <div>
             <label className="block mb-2 font-medium">
               Email
@@ -74,7 +71,8 @@ function Login() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               required
             />
           </div>
@@ -90,18 +88,19 @@ function Login() {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={isLoading}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
-
         </form>
 
         <p className="text-center mt-5">
@@ -113,7 +112,6 @@ function Login() {
             Register
           </Link>
         </p>
-
       </div>
     </div>
   );

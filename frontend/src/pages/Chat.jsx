@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import ChatHeader from "../components/ChatHeader";
 import ChatWindow from "../components/ChatWindow";
 import ChatInput from "../components/ChatInput";
 import API from "../services/api";
 
-function Chat() {
-  const welcomeMessage = {
-    id: 1,
-    sender: "ai",
-    message: "Hello 👋 Welcome to AI Customer Support.",
-  };
+const welcomeMessage = {
+  id: "welcome",
+  sender: "ai",
+  message: "Hello 👋 Welcome to AI Customer Support.",
+};
 
+function Chat() {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -31,53 +32,38 @@ function Chat() {
 
           res.data.chats.forEach((chat) => {
             history.push({
-              id: chat._id + "-user",
+              id: `${chat._id}-user`,
               sender: "user",
               message: chat.message,
             });
 
             history.push({
-              id: chat._id + "-ai",
+              id: `${chat._id}-ai`,
               sender: "ai",
               message: chat.response,
             });
           });
 
-          setMessages(
-            history.length
-              ? history
-              : [
-                {
-                  id: 1,
-                  sender: "ai",
-                  message: "Hello 👋 Welcome to AI Customer Support.",
-                },
-              ]
-          );
+          setMessages(history.length > 0 ? history : [welcomeMessage]);
         }
       } catch (error) {
-        console.error(error);
+        console.error("History Error:", error);
 
-        setMessages([
-          {
-            id: 1,
-            sender: "ai",
-            message: "Hello 👋 Welcome to AI Customer Support.",
-          },
-        ]);
+        toast.error("Failed to load chat history");
+
+        setMessages([welcomeMessage]);
       }
     }
 
     loadHistory();
   }, []);
 
-  // ✅ New Chat
-  const startNewChat = () => {
+  function startNewChat() {
     setMessages([welcomeMessage]);
-  };
+  }
 
-  const sendMessage = async (text) => {
-    if (!text.trim()) return;
+  async function sendMessage(text) {
+    if (!text.trim() || isTyping) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -101,8 +87,6 @@ function Chat() {
         }
       );
 
-      setIsTyping(false);
-
       const aiMessage = {
         id: (Date.now() + 1).toString(),
         sender: "ai",
@@ -110,23 +94,14 @@ function Chat() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-
-      // ❌ remove window.location.reload()
     } catch (error) {
-      console.error(error);
+      console.error("Send Message Error:", error);
 
+      toast.error("Failed to send message. Please try again.");
+    } finally {
       setIsTyping(false);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 2).toString(),
-          sender: "ai",
-          message: "❌ Backend Error",
-        },
-      ]);
     }
-  };
+  }
 
   return (
     <div className="flex h-screen">
@@ -140,7 +115,10 @@ function Chat() {
           isTyping={isTyping}
         />
 
-        <ChatInput onSend={sendMessage} />
+        <ChatInput
+          onSend={sendMessage}
+          isTyping={isTyping}
+        />
       </div>
     </div>
   );

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
-function ChatInput({ onSend }) {
+function ChatInput({ onSend, isTyping }) {
   const [text, setText] = useState("");
 
-  const handleSend = () => {
-    if (!text.trim()) return;
+  function handleSend() {
+    if (!text.trim() || isTyping) return;
 
     onSend(text);
     setText("");
-  };
+  }
 
   return (
     <div className="bg-white border-t p-4">
@@ -17,20 +17,32 @@ function ChatInput({ onSend }) {
 
         <input
           type="text"
-          placeholder="Type your message..."
+          placeholder={
+            isTyping
+              ? "AI is responding..."
+              : "Type your message..."
+          }
           value={text}
+          disabled={isTyping}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
+            if (e.key === "Enter") {
+              handleSend();
+            }
           }}
-          className="flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         />
 
         <button
           onClick={handleSend}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl"
+          disabled={isTyping}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-5 rounded-xl flex items-center justify-center"
         >
-          <Send size={20} />
+          {isTyping ? (
+            <Loader2 size={20} className="animate-spin" />
+          ) : (
+            <Send size={20} />
+          )}
         </button>
 
       </div>

@@ -1,17 +1,22 @@
 import { LogOut, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 function ChatHeader() {
   const navigate = useNavigate();
 
-  const logout = () => {
+  function logout() {
     localStorage.removeItem("token");
-    navigate("/");
-  };
+
+    toast.success("Logged out successfully 👋");
+
+    setTimeout(() => {
+      navigate("/");
+    }, 500);
+  }
 
   return (
     <div className="flex items-center justify-between bg-white border-b px-8 py-5 shadow-sm">
-
       <div className="flex items-center gap-3">
         <Bot className="text-blue-600" size={32} />
 
@@ -33,7 +38,6 @@ function ChatHeader() {
         <LogOut size={18} />
         Logout
       </button>
-
     </div>
   );
 }

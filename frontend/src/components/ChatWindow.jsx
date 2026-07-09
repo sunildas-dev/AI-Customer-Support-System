@@ -1,17 +1,29 @@
 import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
+import TypingIndicator from "./TypingIndicator";
 
 function ChatWindow({ messages, isTyping }) {
-  const bottomRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages, isTyping]);
+    if (messages.length === 0) return;
+
+    const lastMessage = messages[messages.length - 1];
+
+    // Scroll only when the USER sends a message
+    if (lastMessage.sender === "user") {
+      chatContainerRef.current?.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
+    <div
+      ref={chatContainerRef}
+      className="flex-1 overflow-y-auto bg-gray-100 p-6"
+    >
       {messages.map((msg) => (
         <MessageBubble
           key={msg.id}
@@ -20,15 +32,7 @@ function ChatWindow({ messages, isTyping }) {
         />
       ))}
 
-      {isTyping && (
-        <div className="flex mb-4 justify-start">
-          <div className="bg-white px-4 py-3 rounded-2xl shadow-md text-gray-500 italic">
-            🤖 AI is typing...
-          </div>
-        </div>
-      )}
-
-      <div ref={bottomRef}></div>
+      {isTyping && <TypingIndicator />}
     </div>
   );
 }

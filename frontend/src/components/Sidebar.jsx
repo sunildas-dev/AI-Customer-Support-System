@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import { MessageSquarePlus, MessageCircle } from "lucide-react";
+import {
+  MessageSquarePlus,
+  MessageCircle,
+  Trash2,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
 import API from "../services/api";
 
 function Sidebar({ onNewChat }) {
   const [recentChats, setRecentChats] = useState([]);
+
   useEffect(() => {
     async function loadSidebarChats() {
       try {
@@ -20,15 +26,44 @@ function Sidebar({ onNewChat }) {
         }
       } catch (error) {
         console.error("Sidebar Error:", error);
+        toast.error("Failed to load chats");
       }
     }
 
     loadSidebarChats();
   }, []);
 
+  async function deleteChat(chatId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this chat?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await API.delete(`/chat/delete/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data.success) {
+        setRecentChats((prev) =>
+          prev.filter((chat) => chat._id !== chatId)
+        );
+
+        toast.success("Chat deleted");
+      }
+    } catch (error) {
+      console.error("Delete Error:", error);
+      toast.error("Failed to delete chat");
+    }
+  }
+
   return (
     <div className="w-72 h-screen bg-slate-900 text-white flex flex-col">
-
       {/* Logo */}
       <div className="p-6 border-b border-slate-700">
         <h1 className="text-2xl font-bold text-blue-400">
@@ -58,28 +93,36 @@ function Sidebar({ onNewChat }) {
         </h2>
 
         <div className="space-y-2">
-
           {recentChats.length === 0 ? (
             <p className="text-gray-500 text-sm">
               No chats found
             </p>
           ) : (
             recentChats.map((chat) => (
-              <button
+              <div
                 key={chat._id}
-                className="w-full flex items-center gap-3 bg-slate-800 hover:bg-slate-700 p-3 rounded-lg text-left"
+                className="flex items-center justify-between bg-slate-800 hover:bg-slate-700 p-3 rounded-lg"
               >
-                <MessageCircle size={18} />
+                <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                  <MessageCircle size={18} />
 
-                <span className="truncate">
-                  {chat.message.length > 25
-                    ? chat.message.substring(0, 25) + "..."
-                    : chat.message}
-                </span>
-              </button>
+                  <span className="truncate">
+                    {chat.message.length > 25
+                      ? `${chat.message.substring(0, 25)}...`
+                      : chat.message}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => deleteChat(chat._id)}
+                  className="text-red-400 hover:text-red-500 ml-2"
+                  title="Delete Chat"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             ))
           )}
-
         </div>
       </div>
 
