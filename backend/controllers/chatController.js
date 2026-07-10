@@ -5,11 +5,47 @@ export const sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
 
-    // Ask Gemini AI
-    const result = await model.generateContent(message);
+    // Get last 10 chats of current user
+    const previousChats = await Chat.find({
+      user: req.user.id,
+    })
+      .sort({ createdAt: 1 })
+      .limit(10);
+
+    let conversation = `
+You are an AI Customer Support Assistant.
+
+Rules:
+- Answer clearly and professionally.
+- Never invent real-time information.
+- Use Markdown when useful.
+- Remember previous messages in this conversation.
+`;
+
+    // Add previous conversation
+    previousChats.forEach((chat) => {
+      conversation += `
+
+User: ${chat.message}
+
+Assistant: ${chat.response}
+`;
+    });
+
+    // Add current message
+    conversation += `
+
+User: ${message}
+
+Assistant:
+`;
+
+    // Ask Gemini
+    const result = await model.generateContent(conversation);
+
     const aiResponse = result.response.text();
 
-    // Save chat in MongoDB
+    // Save current chat
     const chat = await Chat.create({
       user: req.user.id,
       message,
@@ -32,22 +68,16 @@ export const sendMessage = async (req, res) => {
 };
 export const getChatHistory = async (req, res) => {
   try {
-    console.log("===== HISTORY API =====");
-    console.log("User:", req.user);
-
     const chats = await Chat.find({
       user: req.user.id,
     }).sort({ createdAt: 1 });
-
-    console.log("Chats Found:", chats.length);
-    console.log(chats);
 
     res.status(200).json({
       success: true,
       chats,
     });
   } catch (error) {
-    console.log(error);
+    console.error("History Error:", error);
 
     res.status(500).json({
       success: false,
@@ -55,6 +85,7 @@ export const getChatHistory = async (req, res) => {
     });
   }
 };
+
 export const getSidebarChats = async (req, res) => {
   try {
     const chats = await Chat.find({
@@ -69,12 +100,15 @@ export const getSidebarChats = async (req, res) => {
       chats,
     });
   } catch (error) {
+    console.error("Sidebar Error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 export const deleteChat = async (req, res) => {
   try {
     const { id } = req.params;

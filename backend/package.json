@@ -1,14 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI Customer Support Backend using Express, MongoDB Atlas and Gemini AI",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Sunil Das",
   "license": "ISC",
   "type": "module",
   "dependencies": {
