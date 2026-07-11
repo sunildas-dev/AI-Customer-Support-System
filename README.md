@@ -149,13 +149,21 @@ VITE_API_URL=http://localhost:5000/api
 
 # 📸 Screenshots
 
-> Screenshots will be added soon.
+### 🔐 Login Page
 
-- Login Page
-- Register Page
-- Chat Page
-- Sidebar
-- AI Response
+![Login](screenshots/Login.png)
+
+---
+
+### 📝 Register Page
+
+![Register](screenshots/Register.png)
+
+---
+
+### 💬 AI Chat Interface
+
+![Chat](screenshots/Chat.png)
 
 ---
 
